@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Management - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#f97316',
+                        secondary: '#ea580c',
+                        accent: '#fed7aa',
+                        warm: '#fef3c7',
+                        sage: '#84cc16'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .table-row:hover {
+            background-color: rgba(249, 115, 22, 0.05);
+        }
+        .dark .table-row:hover {
+            background-color: rgba(249, 115, 22, 0.1);
+        }
+        .modal {
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Customer Management</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Dark Mode Toggle -->
+                    <button id="darkModeToggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                        <i class="fas fa-moon dark:hidden text-gray-600"></i>
+                        <i class="fas fa-sun hidden dark:block text-yellow-400"></i>
+                    </button>
+                    <!-- Admin Profile -->
+                    <div class="flex items-center space-x-2">
+                        <img src="/placeholder.svg?height=32&width=32" alt="Admin" class="w-8 h-8 rounded-full">
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Admin User</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-2 bg-primary/10 rounded-lg">
+                        <i class="fas fa-users text-primary text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Customers</p>
+                        <p class="text-2xl font-semibold text-gray-900 dark:text-white" id="totalCustomers">1,234</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-2 bg-sage/10 rounded-lg">
+                        <i class="fas fa-user-check text-sage text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Users</p>
+                        <p class="text-2xl font-semibold text-gray-900 dark:text-white" id="activeCustomers">1,089</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-2 bg-red-100 rounded-lg">
+                        <i class="fas fa-user-times text-red-500 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Inactive Users</p>
+                        <p class="text-2xl font-semibold text-gray-900 dark:text-white" id="inactiveCustomers">145</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-2 bg-blue-100 rounded-lg">
+                        <i class="fas fa-user-plus text-blue-500 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">New This Month</p>
+                        <p class="text-2xl font-semibold text-gray-900 dark:text-white" id="newCustomers">89</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls Section -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6">
+            <div class="p-6">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                    <!-- Search and Filters -->
+                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                        <!-- Search Bar -->
+                        <div class="relative">
+                            <input type="text" id="searchInput" placeholder="Search customers..." 
+                                   class="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        </div>
+                        
+                        <!-- Status Filter -->
+                        <select id="statusFilter" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <option value="">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                        
+                        <!-- Role Filter -->
+                        <select id="roleFilter" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <option value="">All Roles</option>
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                            <option value="moderator">Moderator</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex space-x-2">
+                        <button id="bulkActionsBtn" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors disabled:opacity-50" disabled>
+                            <i class="fas fa-tasks mr-2"></i>Bulk Actions
+                        </button>
+                        <button id="exportBtn" class="px-4 py-2 bg-sage hover:bg-sage/90 text-white rounded-lg transition-colors">
+                            <i class="fas fa-download mr-2"></i>Export
+                        </button>
+                        <button id="addCustomerBtn" class="px-4 py-2 bg-primary hover:bg-secondary text-white rounded-lg transition-colors">
+                            <i class="fas fa-plus mr-2"></i>Add Customer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Table -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <th class="px-6 py-3 text-left">
+                                <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-primary focus:ring-primary">
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" data-sort="name">
+                                Name <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" data-sort="email">
+                                Email <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Phone
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" data-sort="status">
+                                Status <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" data-sort="role">
+                                Role <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" data-sort="date">
+                                Registered <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="customerTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        <!-- Table rows will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6">
+                <div class="flex-1 flex justify-between sm:hidden">
+                    <button id="prevPageMobile" class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                        Previous
+                    </button>
+                    <button id="nextPageMobile" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                        Next
+                    </button>
+                </div>
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700 dark:text-gray-300">
+                            Showing <span id="showingStart" class="font-medium">1</span> to <span id="showingEnd" class="font-medium">10</span> of <span id="totalRecords" class="font-medium">97</span> results
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" id="pagination">
+                            <!-- Pagination buttons will be generated by JavaScript -->
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add/Edit Customer Modal -->
+    <div id="customerModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 modal hidden items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 id="modalTitle" class="text-lg font-medium text-gray-900 dark:text-white">Add New Customer</h3>
+            </div>
+            <form id="customerForm" class="px-6 py-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name *</label>
+                        <input type="text" id="customerName" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email *</label>
+                        <input type="email" id="customerEmail" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone</label>
+                        <input type="tel" id="customerPhone" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Role</label>
+                        <select id="customerRole" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                            <option value="moderator">Moderator</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Address</label>
+                        <textarea id="customerAddress" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                        <select id="customerStatus" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Profile Picture</label>
+                        <input type="file" id="customerAvatar" accept="image/*" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <button type="button" id="cancelBtn" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-primary hover:bg-secondary text-white rounded-lg transition-colors">
+                        Save Customer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Customer Details Modal -->
+    <div id="customerDetailsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 modal hidden items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-screen overflow-y-auto">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Customer Details</h3>
+            </div>
+            <div id="customerDetailsContent" class="px-6 py-4">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Actions Modal -->
+    <div id="bulkActionsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 modal hidden items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Bulk Actions</h3>
+            </div>
+            <div class="px-6 py-4">
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    <span id="selectedCount">0</span> customers selected
+                </p>
+                <div class="space-y-2">
+                    <button id="bulkActivate" class="w-full px-4 py-2 bg-sage hover:bg-sage/90 text-white rounded-lg transition-colors">
+                        <i class="fas fa-user-check mr-2"></i>Activate Selected
+                    </button>
+                    <button id="bulkDeactivate" class="w-full px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">
+                        <i class="fas fa-user-times mr-2"></i>Deactivate Selected
+                    </button>
+                    <button id="bulkDelete" class="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                        <i class="fas fa-trash mr-2"></i>Delete Selected
+                    </button>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <button id="cancelBulkActions" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div id="exportModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 modal hidden items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Export Customer Data</h3>
+            </div>
+            <div class="px-6 py-4">
+                <div class="space-y-3">
+                    <button id="exportCSV" class="w-full px-4 py-2 bg-primary hover:bg-secondary text-white rounded-lg transition-colors">
+                        <i class="fas fa-file-csv mr-2"></i>Export as CSV
+                    </button>
+                    <button id="exportExcel" class="w-full px-4 py-2 bg-sage hover:bg-sage/90 text-white rounded-lg transition-colors">
+                        <i class="fas fa-file-excel mr-2"></i>Export as Excel
+                    </button>
+                    <button id="exportPDF" class="w-full px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">
+                        <i class="fas fa-file-pdf mr-2"></i>Export as PDF
+                    </button>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <button id="cancelExport" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 modal hidden items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="px-6 py-4">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Confirm Action</h3>
+                        <p id="confirmMessage" class="text-sm text-gray-600 dark:text-gray-400 mt-2"></p>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button id="confirmCancel" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        Cancel
+                    </button>
+                    <button id="confirmAction" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">
+                        Confirm
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample customer data
+        let customers = [
+            {
+                id: 1,
+                name: "John Doe",
+                email: "john.doe@example.com",
+                phone: "+1 (555) 123-4567",
+                status: "active",
+                role: "user",
+                registrationDate: "2024-01-15",
+                address: "123 Main St, New York, NY 10001",
+                avatar: "/placeholder.svg?height=40&width=40",
+                lastLogin: "2024-01-20",
+                orders: 15,
+                tickets: 2
+            },
+            {
+                id: 2,
+                name: "Jane Smith",
+                email: "jane.smith@example.com",
+                phone: "+1 (555) 987-6543",
+                status: "active",
+                role: "admin",
+                registrationDate: "2024-01-10",
+                address: "456 Oak Ave, Los Angeles, CA 90210",
+                avatar: "/placeholder.svg?height=40&width=40",
+                lastLogin: "2024-01-21",
+                orders: 8,
+                tickets: 0
+            },
+            {
+                id: 3,
+                name: "Mike Johnson",
+                email: "mike.johnson@example.com",
+                phone: "+1 (555) 456-7890",
+                status: "inactive",
+                role: "user",
+                registrationDate: "2023-12-20",
+                address: "789 Pine St, Chicago, IL 60601",
+                avatar: "/placeholder.svg?height=40&width=40",
+                lastLogin: "2024-01-05",
+                orders: 3,
+                tickets: 1
+            },
+            {
+                id: 4,
+                name: "Sarah Wilson",
+                email: "sarah.wilson@example.com",
+                phone: "+1 (555) 321-0987",
+                status: "active",
+                role: "moderator",
+                registrationDate: "2024-01-08",
+                address: "321 Elm St, Houston, TX 77001",
+                avatar: "/placeholder.svg?height=40&width=40",
+                lastLogin: "2024-01-19",
+                orders: 12,
+                tickets: 0
+            },
+            {
+                id: 5,
+                name: "David Brown",
+                email: "david.brown@example.com",
+                phone: "+1 (555) 654-3210",
+                status: "active",
+                role: "user",
+                registrationDate: "2024-01-12",
+                address: "654 Maple Ave, Phoenix, AZ 85001",
+                avatar: "/placeholder.svg?height=40&width=40",
+                lastLogin: "2024-01-18",
+                orders: 7,
+                tickets: 3
+            }
+        ];
+
+        let filteredCustomers = [...customers];
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let sortField = '';
+        let sortDirection = 'asc';
+        let selectedCustomers = new Set();
+        let editingCustomer = null;
+
+        // Activity log
+        let activityLog = [];
+
+        // Dark mode functionality
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const html = document.documentElement;
+
+        // Check for saved theme preference or default to light mode
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        if (currentTheme === 'dark') {
+            html.classList.add('dark');
+        }
+
+        darkModeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            const theme = html.classList.contains('dark') ? 'dark' : 'light';
+            localStorage.setItem('theme', theme);
+        });
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTable();
+            setupEventListeners();
+            updateStats();
+        });
+
+        function setupEventListeners() {
+            // Search functionality
+            document.getElementById('searchInput').addEventListener('input', handleSearch);
+            
+            // Filter functionality
+            document.getElementById('statusFilter').addEventListener('change', handleFilter);
+            document.getElementById('roleFilter').addEventListener('change', handleFilter);
+            
+            // Modal controls
+            document.getElementById('addCustomerBtn').addEventListener('click', () => openCustomerModal());
+            document.getElementById('cancelBtn').addEventListener('click', closeCustomerModal);
+            document.getElementById('customerForm').addEventListener('submit', handleCustomerSubmit);
+            
+            // Bulk actions
+            document.getElementById('bulkActionsBtn').addEventListener('click', openBulkActionsModal);
+            document.getElementById('cancelBulkActions').addEventListener('click', closeBulkActionsModal);
+            
+            // Export functionality
+            document.getElementById('exportBtn').addEventListener('click', openExportModal);
+            document.getElementById('cancelExport').addEventListener('click', closeExportModal);
+            document.getElementById('exportCSV').addEventListener('click', () => exportData('csv'));
+            document.getElementById('exportExcel').addEventListener('click', () => exportData('excel'));
+            document.getElementById('exportPDF').addEventListener('click', () => exportData('pdf'));
+            
+            // Select all functionality
+            document.getElementById('selectAll').addEventListener('change', handleSelectAll);
+            
+            // Sorting
+            document.querySelectorAll('[data-sort]').forEach(header => {
+                header.addEventListener('click', () => handleSort(header.dataset.sort));
+            });
+            
+            // Bulk action buttons
+            document.getElementById('bulkActivate').addEventListener('click', () => handleBulkAction('activate'));
+            document.getElementById('bulkDeactivate').addEventListener('click', () => handleBulkAction('deactivate'));
+            document.getElementById('bulkDelete').addEventListener('click', () => handleBulkAction('delete'));
+            
+            // Confirmation modal
+            document.getElementById('confirmCancel').addEventListener('click', closeConfirmModal);
+            
+            // Close modals when clicking outside
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal')) {
+                    closeAllModals();
+                }
+            });
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('customerTableBody');
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageCustomers = filteredCustomers.slice(startIndex, endIndex);
+            
+            tbody.innerHTML = pageCustomers.map(customer => `
+                <tr class="table-row">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <input type="checkbox" class="customer-checkbox rounded border-gray-300 text-primary focus:ring-primary" 
+                               value="${customer.id}" ${selectedCustomers.has(customer.id) ? 'checked' : ''}>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <img class="h-10 w-10 rounded-full" src="${customer.avatar}" alt="${customer.name}">
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900 dark:text-white">${customer.name}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900 dark:text-white">${customer.email}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900 dark:text-white">${customer.phone || 'N/A'}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            customer.status === 'active' 
+                                ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' 
+                                : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+                        }">
+                            ${customer.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            customer.role === 'admin' 
+                                ? 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100'
+                                : customer.role === 'moderator'
+                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100'
+                                : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'
+                        }">
+                            ${customer.role}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        ${new Date(customer.registrationDate).toLocaleDateString()}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-2">
+                            <button onclick="viewCustomer(${customer.id})" class="text-primary hover:text-secondary">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button onclick="editCustomer(${customer.id})" class="text-blue-600 hover:text-blue-900">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="toggleCustomerStatus(${customer.id})" class="text-${customer.status === 'active' ? 'red' : 'green'}-600 hover:text-${customer.status === 'active' ? 'red' : 'green'}-900">
+                                <i class="fas fa-${customer.status === 'active' ? 'user-times' : 'user-check'}"></i>
+                            </button>
+                            <button onclick="deleteCustomer(${customer.id})" class="text-red-600 hover:text-red-900">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            
+            // Add event listeners to checkboxes
+            document.querySelectorAll('.customer-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', handleCustomerSelect);
+            });
+            
+            renderPagination();
+            updateBulkActionsButton();
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+            const pagination = document.getElementById('pagination');
+            
+            // Update showing text
+            const startIndex = (currentPage - 1) * itemsPerPage + 1;
+            const endIndex = Math.min(currentPage * itemsPerPage, filteredCustomers.length);
+            document.getElementById('showingStart').textContent = startIndex;
+            document.getElementById('showingEnd').textContent = endIndex;
+            document.getElementById('totalRecords').textContent = filteredCustomers.length;
+            
+            // Generate pagination buttons
+            let paginationHTML = '';
+            
+            // Previous button
+            paginationHTML += `
+                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} 
+                        class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            `;
+            
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    paginationHTML += `
+                        <button onclick="changePage(${i})" 
+                                class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium ${
+                                    i === currentPage 
+                                        ? 'text-primary bg-primary/10 border-primary' 
+                                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                }">
+                            ${i}
+                        </button>
+                    `;
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    paginationHTML += `
+                        <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300">
+                            ...
+                        </span>
+                    `;
+                }
+            }
+            
+            // Next button
+            paginationHTML += `
+                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} 
+                        class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            `;
+            
+            pagination.innerHTML = paginationHTML;
+        }
+
+        function changePage(page) {
+            const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+            if (page >= 1 && page <= totalPages) {
+                currentPage = page;
+                renderTable();
+            }
+        }
+
+        function handleSearch() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            applyFilters();
+        }
+
+        function handleFilter() {
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const roleFilter = document.getElementById('roleFilter').value;
+            
+            filteredCustomers = customers.filter(customer => {
+                const matchesSearch = !searchTerm || 
+                    customer.name.toLowerCase().includes(searchTerm) ||
+                    customer.email.toLowerCase().includes(searchTerm) ||
+                    customer.phone.toLowerCase().includes(searchTerm);
+                
+                const matchesStatus = !statusFilter || customer.status === statusFilter;
+                const matchesRole = !roleFilter || customer.role === roleFilter;
+                
+                return matchesSearch && matchesStatus && matchesRole;
+            });
+            
+            currentPage = 1;
+            renderTable();
+        }
+
+        function handleSort(field) {
+            if (sortField === field) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortField = field;
+                sortDirection = 'asc';
+            }
+            
+            filteredCustomers.sort((a, b) => {
+                let aValue = a[field];
+                let bValue = b[field];
+                
+                if (field === 'registrationDate') {
+                    aValue = new Date(aValue);
+                    bValue = new Date(bValue);
+                }
+                
+                if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+                if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+            
+            renderTable();
+        }
+
+        function handleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.customer-checkbox');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+                const customerId = parseInt(checkbox.value);
+                if (selectAll.checked) {
+                    selectedCustomers.add(customerId);
+                } else {
+                    selectedCustomers.delete(customerId);
+                }
+            });
+            
+            updateBulkActionsButton();
+        }
+
+        function handleCustomerSelect() {
+            const checkbox = event.target;
+            const customerId = parseInt(checkbox.value);
+            
+            if (checkbox.checked) {
+                selectedCustomers.add(customerId);
+            } else {
+                selectedCustomers.delete(customerId);
+            }
+            
+            // Update select all checkbox
+            const allCheckboxes = document.querySelectorAll('.customer-checkbox');
+            const checkedCheckboxes = document.querySelectorAll('.customer-checkbox:checked');
+            const selectAll = document.getElementById('selectAll');
+            
+            selectAll.checked = allCheckboxes.length === checkedCheckboxes.length;
+            selectAll.indeterminate = checkedCheckboxes.length > 0 && checkedCheckboxes.length < allCheckboxes.length;
+            
+            updateBulkActionsButton();
+        }
+
+        function updateBulkActionsButton() {
+            const bulkActionsBtn = document.getElementById('bulkActionsBtn');
+            bulkActionsBtn.disabled = selectedCustomers.size === 0;
+        }
+
+        function openCustomerModal(customer = null) {
+            editingCustomer = customer;
+            const modal = document.getElementById('customerModal');
+            const title = document.getElementById('modalTitle');
+            const form = document.getElementById('customerForm');
+            
+            if (customer) {
+                title.textContent = 'Edit Customer';
+                document.getElementById('customerName').value = customer.name;
+                document.getElementById('customerEmail').value = customer.email;
+                document.getElementById('customerPhone').value = customer.phone || '';
+                document.getElementById('customerRole').value = customer.role;
+                document.getElementById('customerAddress').value = customer.address || '';
+                document.getElementById('customerStatus').value = customer.status;
+            } else {
+                title.textContent = 'Add New Customer';
+                form.reset();
+            }
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeCustomerModal() {
+            const modal = document.getElementById('customerModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            editingCustomer = null;
+        }
+
+        function handleCustomerSubmit(e) {
+            e.preventDefault();
+            
+            const customerData = {
+                name: document.getElementById('customerName').value,
+                email: document.getElementById('customerEmail').value,
+                phone: document.getElementById('customerPhone').value,
+                role: document.getElementById('customerRole').value,
+                address: document.getElementById('customerAddress').value,
+                status: document.getElementById('customerStatus').value,
+                avatar: "/placeholder.svg?height=40&width=40"
+            };
+            
+            if (editingCustomer) {
+                // Update existing customer
+                const index = customers.findIndex(c => c.id === editingCustomer.id);
+                customers[index] = { ...customers[index], ...customerData };
+                logActivity(`Updated customer: ${customerData.name}`);
+            } else {
+                // Add new customer
+                const newCustomer = {
+                    id: Math.max(...customers.map(c => c.id)) + 1,
+                    ...customerData,
+                    registrationDate: new Date().toISOString().split('T')[0],
+                    lastLogin: null,
+                    orders: 0,
+                    tickets: 0
+                };
+                customers.push(newCustomer);
+                logActivity(`Added new customer: ${customerData.name}`);
+            }
+            
+            applyFilters();
+            updateStats();
+            closeCustomerModal();
+        }
+
+        function viewCustomer(id) {
+            const customer = customers.find(c => c.id === id);
+            if (!customer) return;
+            
+            const modal = document.getElementById('customerDetailsModal');
+            const content = document.getElementById('customerDetailsContent');
+            
+            content.innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-1">
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 text-center">
+                            <img src="${customer.avatar}" alt="${customer.name}" class="w-24 h-24 rounded-full mx-auto mb-4">
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">${customer.name}</h3>
+                            <p class="text-gray-600 dark:text-gray-400">${customer.email}</p>
+                            <div class="mt-4">
+                                <span class="px-3 py-1 text-sm font-medium rounded-full ${
+                                    customer.status === 'active' 
+                                        ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' 
+                                        : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+                                }">
+                                    ${customer.status}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2">
+                        <div class="space-y-6">
+                            <div>
+                                <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Personal Information</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone</label>
+                                        <p class="text-sm text-gray-900 dark:text-white">${customer.phone || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
+                                        <p class="text-sm text-gray-900 dark:text-white capitalize">${customer.role}</p>
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Address</label>
+                                        <p class="text-sm text-gray-900 dark:text-white">${customer.address || 'N/A'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Account Information</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Registration Date</label>
+                                        <p class="text-sm text-gray-900 dark:text-white">${new Date(customer.registrationDate).toLocaleDateString()}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Last Login</label>
+                                        <p class="text-sm text-gray-900 dark:text-white">${customer.lastLogin ? new Date(customer.lastLogin).toLocaleDateString() : 'Never'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Activity Summary</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="bg-primary/10 rounded-lg p-4">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-shopping-cart text-primary text-xl"></i>
+                                            <div class="ml-3">
+                                                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Orders</p>
+                                                <p class="text-xl font-semibold text-gray-900 dark:text-white">${customer.orders}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="bg-blue-100 dark:bg-blue-900/20 rounded-lg p-4">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-ticket-alt text-blue-500 text-xl"></i>
+                                            <div class="ml-3">
+                                                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Support Tickets</p>
+                                                <p class="text-xl font-semibold text-gray-900 dark:text-white">${customer.tickets}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <button onclick="editCustomer(${customer.id}); closeCustomerDetailsModal();" class="px-4 py-2 bg-primary hover:bg-secondary text-white rounded-lg transition-colors">
+                        <i class="fas fa-edit mr-2"></i>Edit Customer
+                    </button>
+                    <button onclick="closeCustomerDetailsModal()" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        Close
+                    </button>
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeCustomerDetailsModal() {
+            const modal = document.getElementById('customerDetailsModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function editCustomer(id) {
+            const customer = customers.find(c => c.id === id);
+            if (customer) {
+                openCustomerModal(customer);
+            }
+        }
+
+        function toggleCustomerStatus(id) {
+            const customer = customers.find(c => c.id === id);
+            if (customer) {
+                const newStatus = customer.status === 'active' ? 'inactive' : 'active';
+                const action = newStatus === 'active' ? 'activated' : 'deactivated';
+                
+                showConfirmModal(
+                    `Are you sure you want to ${action === 'activated' ? 'activate' : 'deactivate'} ${customer.name}?`,
+                    () => {
+                        customer.status = newStatus;
+                        logActivity(`${action.charAt(0).toUpperCase() + action.slice(1)} customer: ${customer.name}`);
+                        applyFilters();
+                        updateStats();
+                    }
+                );
+            }
+        }
+
+        function deleteCustomer(id) {
+            const customer = customers.find(c => c.id === id);
+            if (customer) {
+                showConfirmModal(
+                    `Are you sure you want to delete ${customer.name}? This action cannot be undone.`,
+                    () => {
+                        customers = customers.filter(c => c.id !== id);
+                        selectedCustomers.delete(id);
+                        logActivity(`Deleted customer: ${customer.name}`);
+                        applyFilters();
+                        updateStats();
+                    }
+                );
+            }
+        }
+
+        function openBulkActionsModal() {
+            const modal = document.getElementById('bulkActionsModal');
+            document.getElementById('selectedCount').textContent = selectedCustomers.size;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeBulkActionsModal() {
+            const modal = document.getElementById('bulkActionsModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function handleBulkAction(action) {
+            const selectedIds = Array.from(selectedCustomers);
+            const selectedNames = selectedIds.map(id => customers.find(c => c.id === id)?.name).filter(Boolean);
+            
+            let message = '';
+            let actionFn = null;
+            
+            switch (action) {
+                case 'activate':
+                    message = `Are you sure you want to activate ${selectedIds.length} selected customers?`;
+                    actionFn = () => {
+                        selectedIds.forEach(id => {
+                            const customer = customers.find(c => c.id === id);
+                            if (customer) customer.status = 'active';
+                        });
+                        logActivity(`Bulk activated ${selectedIds.length} customers`);
+                    };
+                    break;
+                case 'deactivate':
+                    message = `Are you sure you want to deactivate ${selectedIds.length} selected customers?`;
+                    actionFn = () => {
+                        selectedIds.forEach(id => {
+                            const customer = customers.find(c => c.id === id);
+                            if (customer) customer.status = 'inactive';
+                        });
+                        logActivity(`Bulk deactivated ${selectedIds.length} customers`);
+                    };
+                    break;
+                case 'delete':
+                    message = `Are you sure you want to delete ${selectedIds.length} selected customers? This action cannot be undone.`;
+                    actionFn = () => {
+                        customers = customers.filter(c => !selectedIds.includes(c.id));
+                        selectedCustomers.clear();
+                        logActivity(`Bulk deleted ${selectedIds.length} customers`);
+                    };
+                    break;
+            }
+            
+            closeBulkActionsModal();
+            showConfirmModal(message, () => {
+                actionFn();
+                applyFilters();
+                updateStats();
+                document.getElementById('selectAll').checked = false;
+            });
+        }
+
+        function openExportModal() {
+            const modal = document.getElementById('exportModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeExportModal() {
+            const modal = document.getElementById('exportModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function exportData(format) {
+            const data = filteredCustomers.map(customer => ({
+                Name: customer.name,
+                Email: customer.email,
+                Phone: customer.phone || '',
+                Status: customer.status,
+                Role: customer.role,
+                'Registration Date': customer.registrationDate,
+                Address: customer.address || ''
+            }));
+            
+            switch (format) {
+                case 'csv':
+                    exportToCSV(data);
+                    break;
+                case 'excel':
+                    exportToExcel(data);
+                    break;
+                case 'pdf':
+                    exportToPDF(data);
+                    break;
+            }
+            
+            logActivity(`Exported customer data as ${format.toUpperCase()}`);
+            closeExportModal();
+        }
+
+        function exportToCSV(data) {
+            const headers = Object.keys(data[0]);
+            const csvContent = [
+                headers.join(','),
+                ...data.map(row => headers.map(header => `"${row[header]}"`).join(','))
+            ].join('\n');
+            
+            downloadFile(csvContent, 'customers.csv', 'text/csv');
+        }
+
+        function exportToExcel(data) {
+            // Simplified Excel export (would need a library like SheetJS for full functionality)
+            const csvContent = exportToCSV(data);
+            downloadFile(csvContent, 'customers.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        }
+
+        function exportToPDF(data) {
+            // Simplified PDF export (would need a library like jsPDF for full functionality)
+            const content = data.map(customer => 
+                Object.entries(customer).map(([key, value]) => `${key}: ${value}`).join('\n')
+            ).join('\n\n');
+            
+            downloadFile(content, 'customers.pdf', 'application/pdf');
+        }
+
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function showConfirmModal(message, onConfirm) {
+            const modal = document.getElementById('confirmModal');
+            document.getElementById('confirmMessage').textContent = message;
+            
+            const confirmBtn = document.getElementById('confirmAction');
+            const newConfirmBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+            
+            newConfirmBtn.addEventListener('click', () => {
+                onConfirm();
+                closeConfirmModal();
+            });
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeConfirmModal() {
+            const modal = document.getElementById('confirmModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function closeAllModals() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            });
+        }
+
+        function updateStats() {
+            const total = customers.length;
+            const active = customers.filter(c => c.status === 'active').length;
+            const inactive = customers.filter(c => c.status === 'inactive').length;
+            const thisMonth = customers.filter(c => {
+                const regDate = new Date(c.registrationDate);
+                const now = new Date();
+                return regDate.getMonth() === now.getMonth() && regDate.getFullYear() === now.getFullYear();
+            }).length;
+            
+            document.getElementById('totalCustomers').textContent = total.toLocaleString();
+            document.getElementById('activeCustomers').textContent = active.toLocaleString();
+            document.getElementById('inactiveCustomers').textContent = inactive.toLocaleString();
+            document.getElementById('newCustomers').textContent = thisMonth.toLocaleString();
+        }
+
+        function logActivity(action) {
+            const timestamp = new Date().toISOString();
+            activityLog.unshift({
+                timestamp,
+                action,
+                user: 'Admin User'
+            });
+            
+            // Keep only last 100 activities
+            if (activityLog.length > 100) {
+                activityLog = activityLog.slice(0, 100);
+            }
+        }
+
+        // Generate some sample activity log entries
+        function initializeActivityLog() {
+            const sampleActivities = [
+                'Logged into admin dashboard',
+                'Viewed customer list',
+                'Updated customer: John Doe',
+                'Exported customer data as CSV',
+                'Added new customer: Alice Johnson'
+            ];
+            
+            sampleActivities.forEach((activity, index) => {
+                const date = new Date();
+                date.setHours(date.getHours() - index);
+                activityLog.push({
+                    timestamp: date.toISOString(),
+                    action: activity,
+                    user: 'Admin User'
+                });
+            });
+        }
+
+        // Initialize activity log on page load
+        initializeActivityLog();
+    </script>
+</body>
+</html>

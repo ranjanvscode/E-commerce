@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Orders Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#f97316',
+                        secondary: '#ea580c',
+                        accent: '#fed7aa',
+                        warm: '#fef3c7',
+                        sage: '#84cc16',
+                        border: "hsl(var(--border))",
+                        input: "hsl(var(--input))",
+                        ring: "hsl(var(--ring))",
+                        background: "hsl(var(--background))",
+                        foreground: "hsl(var(--foreground))",
+                        muted: {
+                            DEFAULT: "hsl(var(--muted))",
+                            foreground: "hsl(var(--muted-foreground))",
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --muted: 210 40% 98%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --ring: 215 20.2% 65.1%;
+        }
+
+        .dark {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%;
+            --muted-foreground: 215 20.2% 65.1%;
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --primary: 210 40% 98%;
+            --primary-foreground: 222.2 47.4% 11.2%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --ring: 215 20.2% 65.1%;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 16rem; /* 256px */
+            z-index: 40;
+            background: #fff;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+
+        .sidebar.show {
+            transform: translateX(0);
+        }
+
+        @media (min-width: 1024px) {
+        .sidebar {
+            position: fixed;
+            transform: translateX(0) !important;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            z-index: 40;
+        }
+        .sidebar-overlay {
+            display: none !important;
+        }
+        .main-content {
+            margin-left: 16rem;
+            width: calc(100% - 16rem);
+        }
+        }
+        .sidebar-overlay {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 30;
+        }
+        .sidebar-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .dark .custom-scrollbar::-webkit-scrollbar-track {
+            background: #374151;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #f97316;
+            border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #ea580c;
+        }
+
+        .dropdown-content {
+            display: none;
+        }
+        .dropdown-content.show {
+            display: block;
+        }
+        
+        .modal {
+            display: none;
+        }
+        .modal.show {
+            display: flex;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+  <!-- sidebar -->
+  <div th:replace="admin/fragments/sidebar :: sidebar" class="md:w-64 w-full"></div>
+  <!-- main content -->
+  <div class="flex-1 ml-0 lg:ml-64 transition-all duration-300">
+    <!-- header -->
+    <header class="flex h-14 lg:h-[60px] items-center gap-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 lg:px-6 sticky top-0 z-30 md:px-6">
+
+            <button id="toggleSidebar" class="lg:hidden h-8 w-8 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-orange-50 dark:hover:bg-orange-900/20 flex items-center justify-center">
+                <svg class="h-4 w-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+            <div class="flex-1 min-w-0">
+                <h1 class="font-semibold text-lg text-gray-900 dark:text-white truncate">All Orders</h1>
+            </div>
+            <div class="flex items-center gap-2 lg:gap-4">
+                <div class="relative hidden sm:block">
+                    <svg class="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input
+                        type="search"
+                        placeholder="Search orders..."
+                        class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-sm pl-8 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:w-48 lg:w-64"
+                        id="searchInput"
+                    />
+                </div>
+                <div class="relative">
+                    <button id="filterButton" class="inline-flex items-center px-2 lg:px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-orange-900/20">
+                        <svg class="h-4 w-4 lg:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z"/>
+                        </svg>
+                        <span class="hidden lg:inline">Filter</span>
+                        <svg class="h-4 w-4 ml-1 lg:ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div id="filterDropdown" class="dropdown-content absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10">
+                        <div class="py-1">
+                            <div class="px-3 py-2 text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">Filter by Status</div>
+                            <label class="flex items-center px-3 py-2 text-gray-900 dark:text-white hover:bg-orange-50 dark:hover:bg-orange-900/20 cursor-pointer">
+                                <input type="checkbox" class="mr-2 text-primary focus:ring-primary" checked> All Orders
+                            </label>
+                            <label class="flex items-center px-3 py-2 text-gray-900 dark:text-white hover:bg-orange-50 dark:hover:bg-orange-900/20 cursor-pointer">
+                                <input type="checkbox" value="pending" class="mr-2 text-primary focus:ring-primary"> Pending
+                            </label>
+                            <label class="flex items-center px-3 py-2 text-gray-900 dark:text-white hover:bg-orange-50 dark:hover:bg-orange-900/20 cursor-pointer">
+                                <input type="checkbox" value="processing" class="mr-2 text-primary focus:ring-primary"> Processing
+                            </label>
+                            <label class="flex items-center px-3 py-2 text-gray-900 dark:text-white hover:bg-orange-50 dark:hover:bg-orange-900/20 cursor-pointer">
+                                <input type="checkbox" value="shipped" class="mr-2 text-primary focus:ring-primary"> Shipped
+                            </label>
+                            <label class="flex items-center px-3 py-2 text-gray-900 dark:text-white hover:bg-orange-50 dark:hover:bg-orange-900/20 cursor-pointer">
+                                <input type="checkbox" value="delivered" class="mr-2 text-primary focus:ring-primary"> Delivered
+                            </label>
+                            <label class="flex items-center px-3 py-2 text-gray-900 dark:text-white hover:bg-orange-50 dark:hover:bg-orange-900/20 cursor-pointer">
+                                <input type="checkbox" value="cancelled" class="mr-2 text-primary focus:ring-primary"> Cancelled
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <button class="inline-flex items-center px-2 lg:px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-orange-900/20">
+                    <svg class="h-4 w-4 lg:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <span class="hidden lg:inline">Export</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Mobile Search -->
+        <div class="sm:hidden p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <div class="relative">
+                <svg class="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <input
+                    type="search"
+                    placeholder="Search orders, customers..."
+                    class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-sm pl-8 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                    id="mobileSearchInput"
+                />
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-4 lg:p-6 bg-gray-50 dark:bg-gray-900 overflow-hidden">
+            <!-- Stats Cards -->
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 lg:p-6">
+                    <div class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <h3 class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Orders</h3>
+                        <div class="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <svg class="h-4 w-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m0 0L17 18"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-900 dark:text-white">5</div>
+                    <p class="text-xs text-sage">+12% from last month</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 lg:p-6">
+                    <div class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <h3 class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Revenue</h3>
+                        <div class="h-8 w-8 rounded-full bg-sage/10 flex items-center justify-center">
+                            <svg class="h-4 w-4 text-sage" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-900 dark:text-white">$1,099.87</div>
+                    <p class="text-xs text-sage">+8% from last month</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 lg:p-6">
+                    <div class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <h3 class="text-sm font-medium text-gray-600 dark:text-gray-400">Pending Orders</h3>
+                        <div class="h-8 w-8 rounded-full bg-yellow-100 dark:bg-yellow-900/20 flex items-center justify-center">
+                            <svg class="h-4 w-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-900 dark:text-white">1</div>
+                    <p class="text-xs text-yellow-600">Requires attention</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 lg:p-6">
+                    <div class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <h3 class="text-sm font-medium text-gray-600 dark:text-gray-400">Delivered Orders</h3>
+                        <div class="h-8 w-8 rounded-full bg-sage/10 flex items-center justify-center">
+                            <svg class="h-4 w-4 text-sage" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-900 dark:text-white">1</div>
+                    <p class="text-xs text-sage">This month</p>
+                </div>
+            </div>
+
+            <!-- Orders Table -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Order Details</h3>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar">
+                    <div class="min-w-full">
+                        <table class="w-full">
+                            <thead class="bg-gray-50 dark:bg-gray-700">
+                                <tr>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-900 dark:text-white text-sm">Order ID</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-900 dark:text-white text-sm min-w-[200px]">Customer</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-900 dark:text-white text-sm min-w-[250px]">Products</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-900 dark:text-white text-sm min-w-[120px]">Date</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-900 dark:text-white text-sm min-w-[100px]">Status</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-900 dark:text-white text-sm min-w-[120px]">Payment</th>
+                                    <th class="text-right py-3 px-4 font-medium text-gray-900 dark:text-white text-sm min-w-[100px]">Total</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-900 dark:text-white text-sm min-w-[200px]">Shipping</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-900 dark:text-white text-sm min-w-[80px]">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody" class="divide-y divide-gray-200 dark:divide-gray-700">
+                                <!-- Orders will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div id="orderModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Order Details</h2>
+                    <button id="closeModal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="modalContent" class="p-4 lg:p-6">
+                <!-- Modal content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+     <script th:src="@{/js3/orders.js}"></script>
+     <script th:src="@{/js3/sidebar.js}"></script> 
+</body>
+</html> 

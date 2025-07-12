@@ -1,0 +1,97 @@
+
+<header th:fragment="userNavbar" class="bg-gray-100 dark:bg-gray-800 shadow-lg sticky top-0 z-50 transition-colors duration-300">
+        <div class="w-full bg-white/90 backdrop-blur-sm bg-gray-100 dark:bg-gray-800 z-50 border-b border-gray-900 fixed top-0 left-0 right-0">
+            <div class="container mx-auto py-3 px-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex">
+                        <!-- Hamburger Menu Button -->
+                        <button id="menuToggle" class="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                            <svg id="hamburgerIcon" class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                            <svg id="closeIcon" class="w-6 h-6 text-gray-600 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                        
+                        <!-- Logo -->
+                        <div class="flex items-center space-x-2 hidden">
+                            <!-- <i class="fas fa-shopping-bag text-2xl text-primary-600"></i> -->
+                            <!-- <img th:src="@{/images/rmr.png}" alt="" class="img-fluid" style="width: 50px;" > -->
+                            <h1 class="text-2xl font-bold text-secondary dark:text-primary-600">RMR</h1>
+                        </div>
+                    </div>
+
+                    <!-- Desktop Navigation (visible on md and up) -->
+                    <nav class="hidden md:flex space-x-8 ml-20">
+                        <a href="/home" class="text-gray-700 dark:text-white hover:text-primary">Home</a>
+                        <a href="/home" class="text-gray-700 dark:text-white hover:text-primary">Product</a>
+                        <a href="/about" class="text-gray-700 dark:text-white hover:text-primary">About Us</a>
+                        <a href="/help" class="text-gray-700 dark:text-white hover:text-primary">Contact</a>
+                    </nav>
+
+                    <!-- Header Actions -->
+                    <div class="flex items-center space-x-4">
+                        <!-- Dark Mode Toggle -->
+                        <button id="themeToggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                            <i class="fas fa-sun dark:hidden"></i>
+                            <i class="fas fa-moon hidden dark:inline"></i>
+                        </button>
+
+                        <!-- User Account -->
+                        <a th:if="${#authorization.expression('isAuthenticated()')}" th:href="@{/user/profile}" class="hidden md:flex items-center space-x-2 px-4 py-2 text-primary-600 hover:text-primary-700 transition-colors">
+                            <i class="fas fa-user text-secondary dark:text-primary-600"></i>
+                            <strong sec:authentication="principal.name" class="text-secondary dark:text-primary-600">User</strong>
+                        </a>
+
+                        <button id="loginBtn" 
+                                th:style="${#authorization.expression('isAuthenticated()')} ? 'display:none' : ''"
+                                class="md:inline-flex items-center space-x-2 px-4 py-2 text-primary-600 hover:text-primary-700 transition-colors">
+                                <i class="fas fa-user text-secondary dark:text-primary-600"></i>
+                            <span class="text-secondary dark:text-primary-600">Login</span>
+                        </button>
+
+                        <!-- Cart -->
+                        <button id="cartToggle" 
+                                th:style="!${#authorization.expression('isAuthenticated()')} ? 'display:none' : ''"
+                                class="relative p-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span id="cartCount" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shopping Cart Sidebar -->
+        <div id="cartSidebar" class="fixed inset-y-0 right-0 w-96 bg-gray-100 dark:bg-gray-800 shadow-xl transform translate-x-full transition-transform duration-300 z-50">
+            <div class="flex flex-col h-full">
+                <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold">Shopping Cart</h3>
+                    <button id="closeCart" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div id="cartItems" class="flex-1 overflow-y-auto p-6">
+                    <div id="emptyCart" class="text-center py-12">
+                        <i class="fas fa-shopping-cart text-6xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-500 dark:text-gray-400">Your cart is empty</p>
+                    </div>
+                </div>
+                
+                <div id="cartFooter" class="hidden border-t border-gray-200 dark:border-gray-700 p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-lg font-semibold">Total:</span>
+                        <span id="cartTotal" class="text-xl font-bold text-primary-600">$0.00</span>
+                    </div>
+                    <button id="checkoutBtn" class="w-full bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors">
+                        Proceed to Checkout
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cart Overlay -->
+        <div id="cartOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-40"></div>
+    </header>
