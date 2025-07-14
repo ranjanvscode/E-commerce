@@ -1,6 +1,6 @@
 # 🛒 E-Commerce Application
 
-This repository hosts a robust, full-stack e-commerce application featuring a modern web interface and a powerful Java Spring Boot backend. The backend is designed to manage all business logic, secure authentication, data persistence, and RESTful API interactions. Built with technologies like Java, Spring Boot, Spring Security, Hibernate, and MySQL, the application delivers scalable, maintainable architecture with full support for product management, cart operations, order processing, and payment integration. It is optimized for ease of deployment using Docker.
+This repository hosts a robust, full-stack e-commerce application featuring a modern web interface and a powerful Java Spring Boot backend. The backend is designed to manage all business logic, secure authentication, data persistence, and RESTful API interactions. Built with technologies like Java, Spring Boot, Spring Security, Hibernate, and MySQL, the application delivers a scalable, maintainable architecture with full support for product management, cart operations, order processing, and payment integration. It is optimized for ease of deployment using Docker.
 
 ## 📋 Table of Contents
 
