@@ -2,7 +2,6 @@ package com.ecommerce.service;
 
 import java.math.BigDecimal;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ecommerce.entity.Category;
@@ -13,8 +12,11 @@ import com.ecommerce.repository.DiscountConfigRepository;
 @Service
 public class DiscountService {
 
-    @Autowired
-    private DiscountConfigRepository discountConfigRepo;
+    private final DiscountConfigRepository discountConfigRepo;
+
+    public DiscountService(DiscountConfigRepository discountConfigRepo) {
+        this.discountConfigRepo = discountConfigRepo;
+    }
 
     public BigDecimal getGlobalDiscount() {
         return discountConfigRepo.findById("discount7858")
@@ -31,7 +33,6 @@ public class DiscountService {
     public BigDecimal getFinalPrice(Product product) {
         BigDecimal global = getGlobalDiscount();
         BigDecimal category = getCategoryDiscount(product.getCategory());
-        System.out.println("Cate:"+category+"---- Globla:"+global);
         return product.getFinalPrice(category, global);
     }
 }

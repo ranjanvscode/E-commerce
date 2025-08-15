@@ -282,7 +282,7 @@ function confirmDeleteProduct() {
 
   const headers = {
        "Content-Type": "application/json",
-       [csrf.header]: csrf.token, // Add the CSRF header and token
+       [csrf.header]: csrf.token, 
   };
 
   if (productToDelete) {

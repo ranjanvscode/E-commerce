@@ -37,12 +37,15 @@ public class Product {
 
     // Get final price after discount
     public BigDecimal getFinalPrice(BigDecimal categoryDiscount, BigDecimal globalDiscount) {
-            BigDecimal finalDiscount = discount.compareTo(BigDecimal.ZERO) > 0 ? discount
-                                   : (categoryDiscount.compareTo(BigDecimal.ZERO) > 0
-                                   ? categoryDiscount: (globalDiscount.compareTo(BigDecimal.ZERO) > 0 
-                                   ? globalDiscount : BigDecimal.ZERO));
-
-            System.out.println("Final Discount : "+finalDiscount);
+        BigDecimal finalDiscount = BigDecimal.ZERO;
+        
+        if (discount.compareTo(BigDecimal.ZERO) > 0) {
+            finalDiscount = discount;
+        } else if (categoryDiscount.compareTo(BigDecimal.ZERO) > 0) {
+            finalDiscount = categoryDiscount;
+        } else if (globalDiscount.compareTo(BigDecimal.ZERO) > 0) {
+            finalDiscount = globalDiscount;
+        }
 
         return price.subtract(price.multiply(finalDiscount.divide(BigDecimal.valueOf(100))));
     }
