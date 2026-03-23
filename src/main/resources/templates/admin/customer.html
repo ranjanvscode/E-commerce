@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title>Customer Management - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {   
+                    colors: {
+                        primary: '#f97316',
+                        secondary: '#ea580c',
+                        accent: '#fed7aa',
+                        warm: '#fef3c7',
+                        sage: '#84cc16'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .table-row:hover {
+            background-color: rgba(249, 115, 22, 0.05);
+        }
+        .dark .table-row:hover {
+            background-color: rgba(249, 115, 22, 0.1);
+        }
+        .modal {
+            backdrop-filter: blur(4px);
+        }
+        /* Added smooth transitions for sidebar */
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out;
+        }
+        /* Prevent body scroll when sidebar is open on mobile */
+        body.sidebar-open {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+
+     <!-- Added proper layout wrapper -->
+    <div class="min-h-screen flex flex-col">
+        
+        <!-- Header -->
+        <!-- Made header width only till sidebar - starts after sidebar on desktop -->
+        <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 fixed top-0 left-0 lg:left-64 right-0 z-40">
+            <div class="px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center gap-3">
+                        <!-- Added mobile menu toggle button -->
+                        <button id="mobileMenuToggle" class="lg:hidden p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                            <i class="fas fa-bars text-gray-600 dark:text-gray-300"></i>
+                        </button>
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Customer Management</h1>
+                    </div>
+                    <div class="flex items-center space-x-2 sm:space-x-4">
+                        <!-- Dark Mode Toggle -->
+                        <button id="darkModeToggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                            <i class="fas fa-moon dark:hidden text-gray-600"></i>
+                            <i class="fas fa-sun hidden dark:block text-yellow-400"></i>
+                        </button>
+                        <!-- Admin Profile -->
+                        <div class="flex items-center space-x-2">
+                            <img src="https://ui-avatars.com/api/?name=Admin&height=32&width=32" alt="Admin" class="w-8 h-8 rounded-full">
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:block">Admin User</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Added main layout container with sidebar and content -->
+        <div class="flex flex-1 pt-16 lg:pl-64">
+            
+            <!-- Sidebar -->
+            <!-- Made sidebar responsive: fixed on mobile with overlay, static on desktop -->
+            <!-- Added fixed positioning and overflow-y-auto to make sidebar sticky and scrollable independently -->
+            <!-- Removed top-16 and changed inset-y-0 to top-0 bottom-0 to make sidebar truly fixed from top -->
+            <aside id="sidebar" class="fixed top-0 bottom-0 left-0 z-30 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform -translate-x-full lg:translate-x-0 sidebar-transition overflow-y-auto">
+                <div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
+            </aside>
+
+            <!-- Added sidebar overlay for mobile -->
+            <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden lg:hidden"></div>
+
+            <!-- Main Content -->
+            <!-- Made main content responsive with proper padding and width -->
+            <main class="flex-1 w-full lg:w-auto overflow-x-hidden">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+                    
+                    <!-- Stats Cards -->
+                    <!-- Improved grid responsiveness -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="p-2 bg-primary/10 rounded-lg">
+                                    <i class="fas fa-users text-primary text-xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Customers</p>
+                                    <p class="text-2xl font-semibold text-gray-900 dark:text-white" id="totalCustomers">1,234</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="p-2 bg-sage/10 rounded-lg">
+                                    <i class="fas fa-user-check text-sage text-xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Users</p>
+                                    <p class="text-2xl font-semibold text-gray-900 dark:text-white" id="activeCustomers">1,089</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="p-2 bg-red-100 rounded-lg">
+                                    <i class="fas fa-user-times text-red-500 text-xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Inactive Users</p>
+                                    <p class="text-2xl font-semibold text-gray-900 dark:text-white" id="inactiveCustomers">145</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="p-2 bg-blue-100 rounded-lg">
+                                    <i class="fas fa-user-plus text-blue-500 text-xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">New This Month</p>
+                                    <p class="text-2xl font-semibold text-gray-900 dark:text-white" id="newCustomers">89</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Controls Section -->
+                    <!-- Improved controls section mobile responsiveness -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6">
+                        <div class="p-4 sm:p-6">
+                            <div class="flex flex-col space-y-4">
+                                <!-- Search and Filters -->
+                                <div class="flex flex-col sm:flex-row gap-2 sm:gap-4">
+                                    <!-- Search Bar -->
+                                    <div class="relative flex-1">
+                                        <input type="text" id="searchInput" placeholder="Search customers..." 
+                                               class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                                    </div>
+                                    
+                                    <!-- Status Filter -->
+                                    <select id="statusFilter" class="w-full sm:w-auto px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                        <option value="">All Status</option>
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                    </select>
+                                    
+                                    <!-- Role Filter -->
+                                    <select id="roleFilter" class="w-full sm:w-auto px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                        <option value="">All Roles</option>
+                                        <option value="user">User</option>
+                                        <option value="admin">Admin</option>
+                                        <option value="moderator">Moderator</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Action Buttons -->
+                                <!-- Made action buttons stack on mobile -->
+                                <div class="flex flex-col sm:flex-row gap-2">
+                                    <button id="bulkActionsBtn" class="w-full sm:w-auto px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors disabled:opacity-50" disabled>
+                                        <i class="fas fa-tasks mr-2"></i>Bulk Actions
+                                    </button>
+                                    <button id="exportBtn" class="w-full sm:w-auto px-4 py-2 bg-sage hover:bg-sage/90 text-white rounded-lg transition-colors">
+                                        <i class="fas fa-download mr-2"></i>Export
+                                    </button>
+                                    <button id="addCustomerBtn" class="w-full sm:w-auto px-4 py-2 bg-primary hover:bg-secondary text-white rounded-lg transition-colors">
+                                        <i class="fas fa-plus mr-2"></i>Add Customer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customer Table -->
+                    <!-- Added proper mobile table scrolling -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th class="px-4 sm:px-6 py-3 text-left">
+                                            <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                        </th>
+                                        <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" data-sort="name">
+                                            Name <i class="fas fa-sort ml-1"></i>
+                                        </th>
+                                        <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" data-sort="email">
+                                            Email <i class="fas fa-sort ml-1"></i>
+                                        </th>
+                                        <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Phone
+                                        </th>
+                                        <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" data-sort="status">
+                                            Status <i class="fas fa-sort ml-1"></i>
+                                        </th>
+                                        <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" data-sort="role">
+                                            Role <i class="fas fa-sort ml-1"></i>
+                                        </th>
+                                        <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" data-sort="date">
+                                            Registered <i class="fas fa-sort ml-1"></i>
+                                        </th>
+                                        <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customerTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                    <!-- Table rows will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <div class="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6">
+                            <div class="flex-1 flex justify-between sm:hidden">
+                                <button id="prevPageMobile" class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                    Previous
+                                </button>
+                                <button id="nextPageMobile" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                    Next
+                                </button>
+                            </div>
+                            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                                        Showing <span id="showingStart" class="font-medium">1</span> to <span id="showingEnd" class="font-medium">10</span> of <span id="totalRecords" class="font-medium">97</span> results
+                                    </p>
+                                </div>
+                                <div>
+                                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" id="pagination">
+                                        <!-- Pagination buttons will be generated by JavaScript -->
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add/Edit Customer Modal -->
+    <div id="customerModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 modal hidden items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 id="modalTitle" class="text-lg font-medium text-gray-900 dark:text-white">Add New Customer</h3>
+            </div>
+            <form id="customerForm" class="px-4 sm:px-6 py-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name *</label>
+                        <input type="text" id="customerName" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email *</label>
+                        <input type="email" id="customerEmail" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone</label>
+                        <input type="tel" id="customerPhone" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Role</label>
+                        <select id="customerRole" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Address</label>
+                        <textarea id="customerAddress" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                        <select id="customerStatus" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <button type="button" id="cancelBtn" class="w-full sm:w-auto px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" id="saveBtn" class="w-full sm:w-auto px-4 py-2 bg-primary hover:bg-secondary text-white rounded-lg transition-colors">
+                        Save Customer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Customer Details Modal -->
+    <div id="customerDetailsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 modal hidden items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Customer Details</h3>
+            </div>
+            <div id="customerDetailsContent" class="px-4 sm:px-6 py-4">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Actions Modal -->
+    <div id="bulkActionsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 modal hidden items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Bulk Actions</h3>
+            </div>
+            <div class="px-4 sm:px-6 py-4">
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    <span id="selectedCount">0</span> customers selected
+                </p>
+                <div class="space-y-2">
+                    <button id="bulkActivate" class="w-full px-4 py-2 bg-sage hover:bg-sage/90 text-white rounded-lg transition-colors">
+                        <i class="fas fa-user-check mr-2"></i>Activate Selected
+                    </button>
+                    <button id="bulkDeactivate" class="w-full px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">
+                        <i class="fas fa-user-times mr-2"></i>Deactivate Selected
+                    </button>
+                    <button id="bulkDelete" class="w-full px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors">
+                        <i class="fas fa-trash mr-2"></i>Delete Selected
+                    </button>
+                    <button id="closeBulkModal" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div id="exportModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 modal hidden items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Export Customer Data</h3>
+            </div>
+            <div class="px-4 sm:px-6 py-4">
+                <div class="space-y-3">
+                    <button id="exportCSV" class="w-full px-4 py-2 bg-primary hover:bg-secondary text-white rounded-lg transition-colors">
+                        <i class="fas fa-file-csv mr-2"></i>Export as CSV
+                    </button>
+                    <button id="exportExcel" class="w-full px-4 py-2 bg-sage hover:bg-sage/90 text-white rounded-lg transition-colors">
+                        <i class="fas fa-file-excel mr-2"></i>Export as Excel
+                    </button>
+                    <button id="exportPDF" class="w-full px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">
+                        <i class="fas fa-file-pdf mr-2"></i>Export as PDF
+                    </button>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <button id="cancelExport" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 modal hidden items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="px-4 sm:px-6 py-4">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Confirm Action</h3>
+                        <p id="confirmMessage" class="text-sm text-gray-600 dark:text-gray-400 mt-2"></p>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button id="confirmCancel" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        Cancel
+                    </button>
+                    <button id="confirmAction" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">
+                        Confirm
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('-translate-x-full');
+            sidebarOverlay.classList.toggle('hidden');
+            document.body.classList.toggle('sidebar-open');
+        }
+
+        mobileMenuToggle.addEventListener('click', toggleSidebar);
+        sidebarOverlay.addEventListener('click', toggleSidebar);
+
+        // Close sidebar when clicking a link (optional - for Thymeleaf navigation)
+        sidebar.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A' && window.innerWidth < 1024) {
+                toggleSidebar();
+            }
+        });
+
+        //close sidebar when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!sidebar.contains(e.target) && window.innerWidth < 1024) {
+                toggleSidebar();
+            }
+        })
+    </script>
+
+    <script src="/js3/customer.js"></script>
+</body> 
+</html>
