@@ -18,14 +18,21 @@ public class DiscountService {
         this.discountConfigRepo = discountConfigRepo;
     }
 
+    public void saveGlobalDiscount(float discount){
+        DiscountConfig discountConfig = new DiscountConfig();
+        discountConfig.setId("GLOBAL_DISCOUNT");
+        discountConfig.setGlobalDiscount(BigDecimal.valueOf(discount));
+        discountConfigRepo.save(discountConfig);
+    }
+    
     public BigDecimal getGlobalDiscount() {
-        return discountConfigRepo.findById("discount7858")
+        return discountConfigRepo.findById("GLOBAL_DISCOUNT")
                 .map(DiscountConfig::getGlobalDiscount)
                 .orElse(BigDecimal.ZERO);
     }
 
     public BigDecimal getCategoryDiscount(Category category) {
-        return category != null && category.getCategoryDiscount().compareTo(BigDecimal.ZERO) > 0
+        return category != null &&  category.getCategoryDiscount().compareTo(BigDecimal.ZERO) > 0
                 ? category.getCategoryDiscount()
                 : BigDecimal.ZERO;
     }

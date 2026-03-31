@@ -1,11 +1,11 @@
 package com.ecommerce.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
-import java.util.List;
-
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class OrderRequest {
 
     @NotBlank(message = "Payment method is required")
@@ -14,9 +14,7 @@ public class OrderRequest {
     @NotNull(message = "Address is required")
     private ShippingRequest shipping;
 
-    @NotEmpty(message = "At least one item is required")
-    private List<OrderItemRequest> items;
-
-    private String receiptId; 
-} 
+    @NotBlank(message = "Receipt is required")
+    private String receiptId;
+}
 

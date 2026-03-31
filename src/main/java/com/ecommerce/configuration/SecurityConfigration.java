@@ -52,7 +52,7 @@ public class SecurityConfigration {
             authorize
                 .requestMatchers("/", "/home", "/account/register").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/adminpannel/**", "/user/**", "/cart/**", "/account/**").authenticated()
+                .requestMatchers("/adminpannel/**", "/user/**", "/cart/**", "/account/**", "/payment/**").authenticated()
                 .anyRequest().permitAll()
         )
         .formLogin(form -> form

@@ -1,5 +1,7 @@
 package com.ecommerce.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +19,8 @@ public class PaymentService {
         return paymentRepository.save(payment);
     }
 
-    public Payment getPaymentByRazorpayId(String id){
-
-        return paymentRepository.findById(id).get();
+    public Optional<Payment> getPaymentByRazorpayId(String id) {
+        return paymentRepository.findById(id);
     }
 
     public Payment getPaymentByReceiptId(String receiptId){

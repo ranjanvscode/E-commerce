@@ -17,7 +17,7 @@ import lombok.Setter;
 public class DiscountConfig {
 
     @Id
-    private String id = "discount7858";
+    private String id = "GLOBAL_DISCOUNT";
 
     private BigDecimal globalDiscount; // all-product default discount
 }
